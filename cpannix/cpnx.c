@@ -92,53 +92,68 @@ PANNIX *pannix_alloc(PANNIX_DIMENSIONS kind) {
 }
 
 void pannix_dealloc(PANNIX *p) {
+    if (!p) return;
     switch (p->kind) {
         case PVBAP2D:
-            free(p->vbap2d->degs);
-            free(p->vbap2d->rads);
-            free(p->vbap2d->lpos);
-            free(p->vbap2d->hull);
-            free(p->vbap2d->lpairs);
-            free(p->vbap2d->lgains->cur_gains);
-            free(p->vbap2d->lgains->prev_gains);
-            free(p->vbap2d->lgains->temp_gains);
-            free(p->vbap2d->lgains);
-            free(p->vbap2d->spread_cloud);
-            free(p->vbap2d->out_frame);
-            free(p->vbap2d);
+            if (p->vbap2d){
+                free(p->vbap2d->degs);
+                free(p->vbap2d->rads);
+                free(p->vbap2d->lpos);
+                free(p->vbap2d->hull);
+                free(p->vbap2d->lpairs);
+                if (p->vbap2d->lgains) {
+                    if (p->vbap2d->lgains->cur_gains) free(p->vbap2d->lgains->cur_gains);
+                    if (p->vbap2d->lgains->prev_gains) free(p->vbap2d->lgains->prev_gains);
+                    if (p->vbap2d->lgains->temp_gains) free(p->vbap2d->lgains->temp_gains);
+                    free(p->vbap2d->lgains);
+                }
+                free(p->vbap2d->spread_cloud);
+                if (p->vbap2d->out_frame) free(p->vbap2d->out_frame);
+                free(p->vbap2d);
+            }
             free(p);
             return;
         case PVBAP3D:
-            free(p->vbap3d->degs);
-            free(p->vbap3d->rads);
-            free(p->vbap3d->lpos);
-            free(p->vbap3d->ltriplets);
-            free(p->vbap3d->lgains->cur_gains);
-            free(p->vbap3d->lgains->prev_gains);
-            free(p->vbap3d->lgains->temp_gains);
-            free(p->vbap3d->lgains);
-            if (p->vbap3d->spread_angles) free(p->vbap3d->spread_angles);
-            if (p->vbap3d->spread_cloud) free(p->vbap3d->spread_cloud);
-            free(p->vbap3d->out_frame);
-            free(p->vbap3d);
+            if (p->vbap3d) {
+                free(p->vbap3d->degs);
+                free(p->vbap3d->rads);
+                free(p->vbap3d->lpos);
+                free(p->vbap3d->ltriplets);
+                if (p->vbap3d->lgains) {
+                    if (p->vbap3d->lgains->cur_gains) free(p->vbap3d->lgains->cur_gains);
+                    if (p->vbap3d->lgains->prev_gains) free(p->vbap3d->lgains->prev_gains);
+                    if (p->vbap3d->lgains->temp_gains) free(p->vbap3d->lgains->temp_gains);
+                    free(p->vbap3d->lgains);
+                }
+                if (p->vbap3d->spread_angles) free(p->vbap3d->spread_angles);
+                if (p->vbap3d->spread_cloud) free(p->vbap3d->spread_cloud);
+                if (p->vbap3d->out_frame) free(p->vbap3d->out_frame);
+                free(p->vbap3d);
+            }
             free(p);
             return;
         case PDBAP:
-            free(p->dbap->degs);
-            free(p->dbap->rads);
-            free(p->dbap->lpos);
-            free(p->dbap->lgains->cur_gains);
-            free(p->dbap->lgains->prev_gains);
-            free(p->dbap->lgains->temp_gains);
-            free(p->dbap->lgains);
-            free(p->dbap->weights);
-            free(p->dbap->temp_distances->distances);
-            free(p->dbap->temp_distances->sorted_distances);
-            free(p->dbap->temp_distances);
-            free(p->dbap->temp_b);
-            free(p->dbap->temp_u);
-            free(p->dbap->out_frame);
-            free(p->dbap);
+            if (p->dbap){
+                free(p->dbap->degs);
+                free(p->dbap->rads);
+                free(p->dbap->lpos);
+                if (p->dbap->lgains) {
+                    if (p->dbap->lgains->cur_gains) free(p->dbap->lgains->cur_gains);
+                    if (p->dbap->lgains->prev_gains) free(p->dbap->lgains->prev_gains);
+                    if (p->dbap->lgains->temp_gains) free(p->dbap->lgains->temp_gains);
+                    free(p->dbap->lgains);
+                }
+                if (p->dbap->weights) free(p->dbap->weights);
+                if (p->dbap->temp_distances) {
+                    if (p->dbap->temp_distances->distances) free(p->dbap->temp_distances->distances);
+                    if (p->dbap->temp_distances->sorted_distances) free(p->dbap->temp_distances->sorted_distances);
+                    free(p->dbap->temp_distances);
+                }
+                if (p->dbap->temp_b) free(p->dbap->temp_b);
+                if (p->dbap->temp_u) free(p->dbap->temp_u);
+                if (p->dbap->out_frame) free(p->dbap->out_frame);
+                free(p->dbap);
+            }
             free(p);
             return;
         default:
@@ -264,7 +279,10 @@ int init_vbap2d(VBAP2D *p, int n, int spread_points, size_t frame_size) {
     p->lpos = malloc(sizeof(CartesianPoint) * n);
     p->lpairs = malloc(sizeof(Pair) * 2 * n);
     p->hull = malloc(sizeof(HullPoint) * 2 * n);
+
     p->lgains = malloc(sizeof(Gains));
+    if (!p->lgains) return VBAP2D_INIT_ERROR;
+
     p->lgains->cur_gains = calloc(n, sizeof(double));
     p->lgains->prev_gains = calloc(n, sizeof(double));
     p->lgains->temp_gains = calloc(n, sizeof(double));
@@ -278,7 +296,9 @@ int init_vbap2d(VBAP2D *p, int n, int spread_points, size_t frame_size) {
         !p->rads ||
         !p->lpos ||
         !p->hull ||
-        !p->lgains ||
+        !p->lgains->cur_gains  ||
+        !p->lgains->prev_gains ||
+        !p->lgains->temp_gains ||
         !p->out_frame
     ) {
         return VBAP2D_INIT_ERROR;
@@ -297,7 +317,10 @@ int init_vbap3d(VBAP3D *p, int n, int spread_points, size_t frame_size) {
     p->rads = malloc(sizeof(PolarPoint) * n);
     p->lpos = malloc(sizeof(CartesianPoint) * n);
     p->ltriplets = NULL;
+
     p->lgains = malloc(sizeof(Gains));
+    if (!p->lgains) return VBAP3D_INIT_ERROR;
+
     p->lgains->cur_gains = calloc(n, sizeof(double));
     p->lgains->prev_gains = calloc(n, sizeof(double));
     p->lgains->temp_gains = calloc(n, sizeof(double));
@@ -311,7 +334,9 @@ int init_vbap3d(VBAP3D *p, int n, int spread_points, size_t frame_size) {
         !p->degs ||
         !p->rads ||
         !p->lpos ||
-        !p->lgains ||
+        !p->lgains->cur_gains  ||
+        !p->lgains->prev_gains ||
+        !p->lgains->temp_gains ||
         !p->out_frame
     ) {
         return VBAP3D_INIT_ERROR;
@@ -840,11 +865,14 @@ int init_dbap(DBAP *dbap, int n, double rolloff, double *weights, size_t frame_s
     dbap->degs = malloc(sizeof(PolarPoint) * n);
     dbap->rads = malloc(sizeof(PolarPoint) * n);
     dbap->lpos = malloc(sizeof(CartesianPoint) * n);
+
     dbap->lgains = malloc(sizeof(Gains));
+    dbap->temp_distances = malloc(sizeof(TempDistances));
+    if (!dbap->lgains || !dbap->temp_distances) return DBAP_INIT_ERROR;
+
     dbap->lgains->cur_gains = calloc(n, sizeof(double));
     dbap->lgains->prev_gains = calloc(n, sizeof(double));
     dbap->lgains->temp_gains = calloc(n, sizeof(double));
-    dbap->temp_distances = malloc(sizeof(TempDistances));
     dbap->temp_distances->distances = calloc(n, sizeof(double));
     dbap->temp_distances->sorted_distances = calloc(n, sizeof(double));
     dbap->out_frame = calloc(n * frame_size, sizeof(double));
@@ -859,11 +887,14 @@ int init_dbap(DBAP *dbap, int n, double rolloff, double *weights, size_t frame_s
         !dbap->degs ||
         !dbap->rads ||
         !dbap->lpos ||
-        !dbap->lgains ||
-        !dbap->temp_distances ||
-        !dbap->temp_distances->distances ||
+        !dbap->lgains->cur_gains  ||
+        !dbap->lgains->prev_gains ||
+        !dbap->lgains->temp_gains ||
+        !dbap->temp_distances->distances        ||
+        !dbap->temp_distances->sorted_distances ||
         !dbap->temp_b ||
-        !dbap->temp_u
+        !dbap->temp_u ||
+        !dbap->out_frame
     ) {
         return DBAP_INIT_ERROR;
     }
@@ -903,7 +934,7 @@ double get_spatial_blur(DBAP *dbap) {
 
 void set_loudspeaker_position(DBAP *dbap, PolarPoint *input_coords) {
     for (int i = 0; i < dbap->n; i++) {
-        dbap->lpos[i] = (CartesianPoint) pol_to_car(&input_coords[i], DEGREE);
+        dbap->lpos[i] = pol_to_car(&input_coords[i], DEGREE);
     }
 };
 

@@ -78,7 +78,7 @@ int main() {
         printf("GAINS: %f\n", vbap3d->vbap3d->lgains->cur_gains[i]);
     }
 
-    PolarPoint dbap_pol_source = { 1.0, 90.0, 0.0 };
+    PolarPoint dbap_pol_source = { 1.0, -30.0, 0.0 };
     CartesianPoint dbap_cart_source = pol_to_car(&dbap_pol_source, DEGREE);
     PANNIX *dbap = pannix_alloc(PDBAP);
     err = initialize_dbap(dbap, AUDIO_BLOCK_SIZE, dbap_degs, N_3D_LOUDSPEAKERS, 24, NULL);

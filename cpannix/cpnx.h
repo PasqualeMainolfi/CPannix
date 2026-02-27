@@ -1,7 +1,7 @@
 #ifndef CPNX_H
 #define CPNX_H
 
-#ifdef _WIN_32
+#ifdef _WIN32
     #ifdef BUILDING_CPNX
         #define CPNX_API __declspec(dllexport)
     #else
@@ -20,7 +20,7 @@
 #define VBAP3D_INIT_ERROR 3
 #define DBAP_INIT_ERROR 4
 
-#define PI (double) acos(-1.0)
+#define PI (double)acos(-1.0)
 #define TO_RAD(x) ((x) * PI / 180.0)
 #define TO_DEG(x) ((x) * 180.0 / PI)
 
