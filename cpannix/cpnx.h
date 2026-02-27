@@ -14,11 +14,11 @@
 #include <math.h>
 #include <stddef.h>
 
-#define NO_ERROR 0
-#define VBAP_INIT_ERROR 1
+#define NO_ERROR          0
+#define VBAP_INIT_ERROR   1
 #define VBAP2D_INIT_ERROR 2
 #define VBAP3D_INIT_ERROR 3
-#define DBAP_INIT_ERROR 4
+#define DBAP_INIT_ERROR   4
 
 #define PI (double)acos(-1.0)
 #define TO_RAD(x) ((x) * PI / 180.0)
@@ -149,11 +149,89 @@ static inline double wrap_angle(double x, ANGLE_KIND akind);
 static inline double clamp_elevation(double x, ANGLE_KIND akind);
 
 // --- PANNIX (2D-3D) ---
+
+/**
+ * Allocates and initializes a new PANNIX instance.
+ *
+ * @param kind  The spatialization kind to use. Must be one of:
+ *              - PVBAP2D : 2D Vector Base Amplitude Panning
+ *              - PVBAP3D : 3D Vector Base Amplitude Panning
+ *              - PDBAP   : Distance-Based Amplitude Panning
+ *
+ * @return Pointer to a newly allocated PANNIX structure on success.
+ *         Returns NULL if allocation fails.
+ *
+ * @note The returned pointer must be freed using pannix_dealloc()
+ *       to avoid memory leaks.
+ *
+ * @warning The internal structures of the PANNIX instance are
+ *          not initialized beyond memory allocation; you must
+ *          call the appropriate initialize_vbap() or initialize_dbap()
+ *          before using the instance for audio processing.
+ */
 PANNIX* pannix_alloc(PANNIX_DIMENSIONS kind);
+
+/**
+ * Frees all memory associated with a PANNIX instance.
+ *
+ * @param p  Pointer to a PANNIX instance previously allocated with pannix_alloc().
+ *
+ * @note After calling this function, the pointer becomes invalid and must not be used.
+ */
 void pannix_dealloc(PANNIX *p);
+
+/**
+ * Initializes a VBAP (Vector Base Amplitude Panning) spatializer.
+ *
+ * @param pannix        Pointer to a PANNIX instance (must have kind = PVBAP2D or PVBAP3D).
+ * @param frame_size    Audio frame size for processing.
+ * @param pos_in_degs   Pointer to an array of loudspeaker positions in degrees (PolarPoint (PVBAP3D) or double[] (PVBAP2D)).
+ * @param n             Number of loudspeakers (size of pos_in_degs array).
+ * @param spread_points Optional spread parameter (0 for standard VBAP, >0 to diffuse the source over multiple directions).
+ *
+ * @return 0 on success, non-zero on error.
+ *
+ * @note The PANNIX instance must be allocated with pannix_alloc() before calling.
+ */
 int initialize_vbap(PANNIX *pannix, size_t frame_size, void *pos_in_degs, int n, int spread_points);
+
+/**
+ * Initializes a DBAP (Distance-Based Amplitude Panning) spatializer.
+ *
+ * @param pannix      Pointer to a PANNIX instance (must have kind = PDBAP).
+ * @param frame_size  Audio frame size for processing.
+ * @param pos_in_degs Pointer to an array of loudspeaker positions in degrees (PolarPoint or double[] depending on implementation).
+ * @param n           Number of loudspeakers (size of pos_in_degs array).
+ * @param rolloff     Rolloff exponent for distance attenuation.
+ * @param weights     Optional array of loudspeaker weights (length = n), can be NULL for uniform weighting.
+ *
+ * @return 0 on success, non-zero on error.
+ *
+ * @note The PANNIX instance must be allocated with pannix_alloc() before calling.
+ */
 int initialize_dbap(PANNIX *pannix, size_t frame_size, void *pos_in_degs, int n, double rolloff, double *weights);
+
+/**
+ * Computes the gain vector for a given source position.
+ *
+ * @param pannix Pointer to an initialized PANNIX instance.
+ * @param source Pointer to a CartesianPoint representing the source position.
+ * @param spread Optional spread parameter for DBAP (smooth exponential attenuation).
+ *
+ * @note Updates internal gain buffers; call gain_vector_interpolation() to apply gains to audio frames.
+ */
 void solve_gain_vector(PANNIX *pannix, CartesianPoint *source, double spread);
+
+/**
+ * Applies gain vector interpolation to an audio frame.
+ *
+ * @param out          Pointer to the output frame buffer (length = nchnls * frame_size).
+ * @param input_frame  Pointer to the input audio frame buffer (length = frame_size).
+ * @param pannix       Pointer to an initialized PANNIX instance with solved gain vector.
+ * @param ch_mode      Channel mode (PLANAR or INTERLEAVED).
+ *
+ * @note The output buffer will contain the spatialized frame.
+ */
 void gain_vector_interpolation(double *out, double *input_frame, PANNIX *pannix, CHANNEL_MODE ch_mode);
 
 PolarPoint car_to_pol(const CartesianPoint *p);
