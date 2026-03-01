@@ -2,3 +2,9 @@
 target/
 pyrightconfig.json
 doc/
+build/
+*.so
+*.dylib
+*.exe
+*.o
+*.a

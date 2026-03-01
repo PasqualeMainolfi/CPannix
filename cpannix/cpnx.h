@@ -235,7 +235,7 @@ void solve_gain_vector(PANNIX *pannix, CartesianPoint *source, double spread);
 void gain_vector_interpolation(double *out, double *input_frame, PANNIX *pannix, CHANNEL_MODE ch_mode);
 
 PolarPoint car_to_pol(const CartesianPoint *p);
-CartesianPoint pol_to_car(const PolarPoint *p, ANGLE_KIND ANGLE_KIND);
+CartesianPoint pol_to_car(const PolarPoint *p, ANGLE_KIND akind);
 void generate_spread_cloud(CartesianPoint *cloud, PANNIX_DIMENSIONS pdim, CartesianPoint *source, double (*angles_table)[2], double spread, int n_points);
 // ---
 

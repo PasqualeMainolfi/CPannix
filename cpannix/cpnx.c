@@ -228,12 +228,12 @@ PolarPoint car_to_pol(const CartesianPoint *p) {
     return pol;
 };
 
-CartesianPoint pol_to_car(const PolarPoint *p, ANGLE_KIND deg_mode) {
+CartesianPoint pol_to_car(const PolarPoint *p, ANGLE_KIND akind) {
     CartesianPoint car;
 
     double phi = p->phi;
     double theta = p->theta;
-    if (deg_mode == DEGREE) {
+    if (akind == DEGREE) {
         phi = TO_RAD(wrap_angle(p->phi, DEGREE));
         theta = TO_RAD(clamp_elevation(p->theta, DEGREE));
     }
